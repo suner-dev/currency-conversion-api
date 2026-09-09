@@ -63,7 +63,20 @@ Aucune liste n'est codée en dur : **toutes les devises du fournisseur sont acce
 | `XAF` | Franc CFA d'Afrique centrale (BEAC) |
 | `XOF` | Franc CFA de l'Afrique de l'Ouest (BCEAO) |
 | `CNY` | Yuan renminbi chinois |
-| `USD`, `EUR`, `CHF`, … | Principales devises internationales |
+| `GBP` | Livre sterling |
+| `JPY` | Yen japonais |
+| `CHF` | Franc suisse |
+| `USD`, `EUR`, … | Principales devises internationales |
+
+**Toutes les devises du fournisseur sont convertibles entre elles** (XAF ↔ EUR, XAF ↔ USD, XAF ↔ CNY, XAF ↔ XOF, GBP ↔ XOF, …). Un script de vérification de couverture est fourni :
+
+```bash
+# Matrice des monnaies clés (XAF, XOF, CNY, EUR, USD, GBP, JPY, CHF)
+./scripts/verify-currencies.sh http://localhost:8080
+
+# Vérifier TOUTES les devises du fournisseur depuis le XAF
+./scripts/verify-currencies.sh http://localhost:8080 --all XAF
+```
 
 Exemples :
 
@@ -82,6 +95,21 @@ curl -X POST http://localhost:8080/api/currency/convert \
 curl -X POST http://localhost:8080/api/currency/convert \
   -H "Content-Type: application/json" \
   -d '{"from":"CNY","to":"XAF","amount":500}'
+
+# Livre sterling → Franc CFA de l'Afrique de l'Ouest
+curl -X POST http://localhost:8080/api/currency/convert \
+  -H "Content-Type: application/json" \
+  -d '{"from":"GBP","to":"XOF","amount":100}'
+
+# Yen japonais → Euro
+curl -X POST http://localhost:8080/api/currency/convert \
+  -H "Content-Type: application/json" \
+  -d '{"from":"JPY","to":"EUR","amount":10000}'
+
+# Franc suisse → Franc CFA de l'Afrique de l'Ouest
+curl -X POST http://localhost:8080/api/currency/convert \
+  -H "Content-Type: application/json" \
+  -d '{"from":"CHF","to":"XOF","amount":300}'
 ```
 
 Réponse type (USD → XAF) :
@@ -163,11 +191,11 @@ Exemple d'erreur (aucun détail technique exposé) :
 ./mvnw test
 ```
 
-40 tests automatisés, **aucune dépendance Internet** :
-- `CurrencyConversionServiceTest` : logique de conversion (14 cas, dont XAF/XOF/CNY)
+43 tests automatisés, **aucune dépendance Internet** :
+- `CurrencyConversionServiceTest` : logique de conversion (16 cas, dont XAF, XOF, CNY, GBP, JPY, CHF)
 - `ExchangeRateClientTest` : HTTP 200/401/404/429/500, JSON malformé, timeout, connexion refusée via MockWebServer (11 cas)
 - `CurrencyControllerTest` : codes HTTP 200/400/502/500 (10 cas)
-- `CurrencyConversionIntegrationTest` : bout en bout avec client mocké + OpenAPI (5 cas, dont XAF et XOF→CNY)
+- `CurrencyConversionIntegrationTest` : bout en bout avec client mocké + OpenAPI (6 cas, dont USD→XAF, XOF→CNY, CHF→XOF)
 
 ### Tester depuis Swagger
 

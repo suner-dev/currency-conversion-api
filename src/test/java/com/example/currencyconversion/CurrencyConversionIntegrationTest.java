@@ -87,6 +87,20 @@ class CurrencyConversionIntegrationTest {
     }
 
     @Test
+    void shouldConvertSwissFrancToWestAfricanCfaEndToEnd() throws Exception {
+        when(exchangeRateClient.getExchangeRate("CHF", "XOF")).thenReturn(new BigDecimal("614.2055"));
+
+        mockMvc.perform(post("/api/currency/convert")
+                        .contentType("application/json")
+                        .content("{\"from\":\"chf\",\"to\":\"xof\",\"amount\":300}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.from").value("CHF"))
+                .andExpect(jsonPath("$.to").value("XOF"))
+                .andExpect(jsonPath("$.exchangeRate").value(614.2055))
+                .andExpect(jsonPath("$.convertedAmount").value(184261.65));
+    }
+
+    @Test
     void shouldExposeOpenApiDocs() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())

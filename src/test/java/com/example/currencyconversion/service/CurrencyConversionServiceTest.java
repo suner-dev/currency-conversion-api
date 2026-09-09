@@ -153,6 +153,26 @@ class CurrencyConversionServiceTest {
         assertEquals(0, new BigDecimal("119.20").compareTo(response.getConvertedAmount()));
     }
 
+    @Test
+    void shouldConvertUsdToJapaneseYen() {
+        when(client.getExchangeRate("USD", "JPY")).thenReturn(new BigDecimal("155.1278"));
+
+        ConversionResponse response = service.convert(req("USD", "JPY", "1000"));
+
+        assertEquals("JPY", response.getTo());
+        assertEquals(0, new BigDecimal("155127.80").compareTo(response.getConvertedAmount()));
+    }
+
+    @Test
+    void shouldConvertEuroToBritishPound() {
+        when(client.getExchangeRate("EUR", "GBP")).thenReturn(new BigDecimal("0.843512"));
+
+        ConversionResponse response = service.convert(req("EUR", "GBP", "250"));
+
+        assertEquals("GBP", response.getTo());
+        assertEquals(0, new BigDecimal("210.88").compareTo(response.getConvertedAmount()));
+    }
+
     private ConversionRequest req(String from, String to, String amount) {
         return new ConversionRequest(from, to, new BigDecimal(amount));
     }

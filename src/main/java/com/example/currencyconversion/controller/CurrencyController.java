@@ -36,7 +36,8 @@ public class CurrencyController {
                           "Les taux sont récupérés dynamiquement auprès d'un fournisseur externe — " +
                           "les valeurs ci-dessous sont des exemples de structure, pas des taux garantis. " +
                           "Toutes les devises supportées par le fournisseur sont acceptées, dont " +
-                          "XAF (Franc CFA d'Afrique centrale), XOF (Franc CFA de l'Afrique de l'Ouest) et CNY (Yuan chinois)."
+                          "XAF (Franc CFA d'Afrique centrale), XOF (Franc CFA de l'Afrique de l'Ouest), CNY (Yuan chinois), " +
+                          "GBP (Livre sterling), JPY (Yen japonais) et CHF (Franc suisse)."
     )
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
@@ -49,7 +50,13 @@ public class CurrencyController {
                             @ExampleObject(name = "XOF (Franc CFA Afrique de l'Ouest) → CNY",
                                     value = "{ \"from\": \"XOF\", \"to\": \"CNY\", \"amount\": 10000 }"),
                             @ExampleObject(name = "CNY (Yuan) → XAF",
-                                    value = "{ \"from\": \"CNY\", \"to\": \"XAF\", \"amount\": 500 }")
+                                    value = "{ \"from\": \"CNY\", \"to\": \"XAF\", \"amount\": 500 }"),
+                            @ExampleObject(name = "EUR → GBP (Livre sterling)",
+                                    value = "{ \"from\": \"EUR\", \"to\": \"GBP\", \"amount\": 250 }"),
+                            @ExampleObject(name = "USD → JPY (Yen japonais)",
+                                    value = "{ \"from\": \"USD\", \"to\": \"JPY\", \"amount\": 1000 }"),
+                            @ExampleObject(name = "CHF (Franc suisse) → XOF",
+                                    value = "{ \"from\": \"CHF\", \"to\": \"XOF\", \"amount\": 300 }")
                     }))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Conversion effectuée",
