@@ -131,6 +131,28 @@ class CurrencyConversionServiceTest {
         assertThrows(InvalidCurrencyException.class, () -> service.convert(req("XXX", "EUR", "100")));
     }
 
+    // ---- Devises africaines et chinoise (XAF, XOF, CNY) ----
+    @Test
+    void shouldConvertUsdToCentralAfricanCfa() {
+        when(client.getExchangeRate("USD", "XAF")).thenReturn(new BigDecimal("564.291557"));
+
+        ConversionResponse response = service.convert(req("USD", "XAF", "100"));
+
+        assertEquals("XAF", response.getTo());
+        assertEquals(0, new BigDecimal("564.2916").compareTo(response.getExchangeRate()));
+        assertEquals(0, new BigDecimal("56429.16").compareTo(response.getConvertedAmount()));
+    }
+
+    @Test
+    void shouldConvertWestAfricanCfaToChineseYuan() {
+        when(client.getExchangeRate("XOF", "CNY")).thenReturn(new BigDecimal("0.011920"));
+
+        ConversionResponse response = service.convert(req("XOF", "CNY", "10000"));
+
+        assertEquals("CNY", response.getTo());
+        assertEquals(0, new BigDecimal("119.20").compareTo(response.getConvertedAmount()));
+    }
+
     private ConversionRequest req(String from, String to, String amount) {
         return new ConversionRequest(from, to, new BigDecimal(amount));
     }

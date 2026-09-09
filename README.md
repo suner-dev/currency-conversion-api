@@ -54,6 +54,49 @@ Variables supportées (valeurs par défaut dans `src/main/resources/application.
 
 Le endpoint y est documenté avec des exemples de requête/réponse. **Les valeurs de taux dans les exemples sont des illustrations de structure, pas des taux garantis.**
 
+## Devises supportées
+
+Aucune liste n'est codée en dur : **toutes les devises du fournisseur sont acceptées dynamiquement** (166 devises au moment du test). Parmi elles :
+
+| Code | Monnaie |
+|---|---|
+| `XAF` | Franc CFA d'Afrique centrale (BEAC) |
+| `XOF` | Franc CFA de l'Afrique de l'Ouest (BCEAO) |
+| `CNY` | Yuan renminbi chinois |
+| `USD`, `EUR`, `CHF`, … | Principales devises internationales |
+
+Exemples :
+
+```bash
+# USD → Franc CFA d'Afrique centrale
+curl -X POST http://localhost:8080/api/currency/convert \
+  -H "Content-Type: application/json" \
+  -d '{"from":"USD","to":"XAF","amount":100}'
+
+# Franc CFA de l'Afrique de l'Ouest → Yuan chinois
+curl -X POST http://localhost:8080/api/currency/convert \
+  -H "Content-Type: application/json" \
+  -d '{"from":"XOF","to":"CNY","amount":10000}'
+
+# Yuan chinois → Franc CFA d'Afrique centrale
+curl -X POST http://localhost:8080/api/currency/convert \
+  -H "Content-Type: application/json" \
+  -d '{"from":"CNY","to":"XAF","amount":500}'
+```
+
+Réponse type (USD → XAF) :
+
+```json
+{
+  "from": "USD",
+  "to": "XAF",
+  "amount": 100,
+  "exchangeRate": 564.2916,
+  "convertedAmount": 56429.16,
+  "timestamp": "2026-09-09T12:00:00Z"
+}
+```
+
 ## Endpoint principal
 
 ```
@@ -120,11 +163,11 @@ Exemple d'erreur (aucun détail technique exposé) :
 ./mvnw test
 ```
 
-36 tests automatisés, **aucune dépendance Internet** :
-- `CurrencyConversionServiceTest` : logique de conversion (12 cas)
+40 tests automatisés, **aucune dépendance Internet** :
+- `CurrencyConversionServiceTest` : logique de conversion (14 cas, dont XAF/XOF/CNY)
 - `ExchangeRateClientTest` : HTTP 200/401/404/429/500, JSON malformé, timeout, connexion refusée via MockWebServer (11 cas)
 - `CurrencyControllerTest` : codes HTTP 200/400/502/500 (10 cas)
-- `CurrencyConversionIntegrationTest` : bout en bout avec client mocké + OpenAPI (3 cas)
+- `CurrencyConversionIntegrationTest` : bout en bout avec client mocké + OpenAPI (5 cas, dont XAF et XOF→CNY)
 
 ### Tester depuis Swagger
 

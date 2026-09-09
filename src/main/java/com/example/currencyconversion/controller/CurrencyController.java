@@ -34,15 +34,35 @@ public class CurrencyController {
             summary = "Convertir un montant",
             description = "Convertit un montant d'une devise source vers une devise cible. " +
                           "Les taux sont récupérés dynamiquement auprès d'un fournisseur externe — " +
-                          "les valeurs ci-dessous sont des exemples de structure, pas des taux garantis."
+                          "les valeurs ci-dessous sont des exemples de structure, pas des taux garantis. " +
+                          "Toutes les devises supportées par le fournisseur sont acceptées, dont " +
+                          "XAF (Franc CFA d'Afrique centrale), XOF (Franc CFA de l'Afrique de l'Ouest) et CNY (Yuan chinois)."
     )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = @Content(mediaType = "application/json",
+                    examples = {
+                            @ExampleObject(name = "USD → EUR",
+                                    value = "{ \"from\": \"USD\", \"to\": \"EUR\", \"amount\": 100 }"),
+                            @ExampleObject(name = "USD → XAF (Franc CFA Afrique centrale)",
+                                    value = "{ \"from\": \"USD\", \"to\": \"XAF\", \"amount\": 100 }"),
+                            @ExampleObject(name = "XOF (Franc CFA Afrique de l'Ouest) → CNY",
+                                    value = "{ \"from\": \"XOF\", \"to\": \"CNY\", \"amount\": 10000 }"),
+                            @ExampleObject(name = "CNY (Yuan) → XAF",
+                                    value = "{ \"from\": \"CNY\", \"to\": \"XAF\", \"amount\": 500 }")
+                    }))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Conversion effectuée",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ConversionResponse.class),
-                            examples = @ExampleObject(name = "USD → EUR",
-                                    value = "{ \"from\": \"USD\", \"to\": \"EUR\", \"amount\": 100, " +
-                                            "\"exchangeRate\": 0.8603, \"convertedAmount\": 86.03, \"timestamp\": \"2026-09-09T12:00:00Z\" }"))),
+                            examples = {
+                                    @ExampleObject(name = "USD → EUR",
+                                            value = "{ \"from\": \"USD\", \"to\": \"EUR\", \"amount\": 100, " +
+                                                    "\"exchangeRate\": 0.8603, \"convertedAmount\": 86.03, \"timestamp\": \"2026-09-09T12:00:00Z\" }"),
+                                    @ExampleObject(name = "USD → XAF",
+                                            value = "{ \"from\": \"USD\", \"to\": \"XAF\", \"amount\": 100, " +
+                                                    "\"exchangeRate\": 564.2916, \"convertedAmount\": 56429.16, \"timestamp\": \"2026-09-09T12:00:00Z\" }")
+                            })),
             @ApiResponse(responseCode = "400", description = "Requête invalide (devise ou montant invalide)"),
             @ApiResponse(responseCode = "502", description = "Fournisseur de taux externe indisponible"),
             @ApiResponse(responseCode = "500", description = "Erreur serveur imprévue")

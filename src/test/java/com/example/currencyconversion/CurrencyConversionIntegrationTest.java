@@ -60,6 +60,33 @@ class CurrencyConversionIntegrationTest {
     }
 
     @Test
+    void shouldConvertUsdToCentralAfricanCfaEndToEnd() throws Exception {
+        when(exchangeRateClient.getExchangeRate("USD", "XAF")).thenReturn(new BigDecimal("564.291557"));
+
+        mockMvc.perform(post("/api/currency/convert")
+                        .contentType("application/json")
+                        .content("{\"from\":\"USD\",\"to\":\"XAF\",\"amount\":100}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.from").value("USD"))
+                .andExpect(jsonPath("$.to").value("XAF"))
+                .andExpect(jsonPath("$.exchangeRate").value(564.2916))
+                .andExpect(jsonPath("$.convertedAmount").value(56429.16));
+    }
+
+    @Test
+    void shouldConvertWestAfricanCfaToChineseYuanEndToEnd() throws Exception {
+        when(exchangeRateClient.getExchangeRate("XOF", "CNY")).thenReturn(new BigDecimal("0.01192"));
+
+        mockMvc.perform(post("/api/currency/convert")
+                        .contentType("application/json")
+                        .content("{\"from\":\"xof\",\"to\":\"cny\",\"amount\":10000}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.from").value("XOF"))
+                .andExpect(jsonPath("$.to").value("CNY"))
+                .andExpect(jsonPath("$.convertedAmount").value(119.20));
+    }
+
+    @Test
     void shouldExposeOpenApiDocs() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
