@@ -17,11 +17,18 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Component
 public class ExchangeRateClient {
 
     private static final Logger log = LoggerFactory.getLogger(ExchangeRateClient.class);
+    /**
+     * Devise de base utilisée uniquement pour récupérer la liste des devises supportées :
+     * la réponse du fournisseur contient un taux vers chaque devise disponible.
+     */
+    private static final String LIST_BASE_CURRENCY = "USD";
 
     private final WebClient webClient;
     private final String apiKey;
@@ -30,6 +37,37 @@ public class ExchangeRateClient {
                               @Value("${exchange-rate.api-key:}") String apiKey) {
         this.webClient = webClient;
         this.apiKey = apiKey;
+    }
+
+    /**
+     * Liste les codes de devises supportés par le fournisseur, triés alphabétiquement.
+     * La liste provient intégralement du fournisseur : aucune devise n'est codée en dur.
+     */
+    public SortedSet<String> getSupportedCurrencyCodes() {
+        ProviderResponse response;
+        try {
+            response = webClient.get()
+                    .uri(uriBuilder -> {
+                        uriBuilder.path("/latest/{base}");
+                        if (StringUtils.hasText(apiKey)) {
+                            uriBuilder.queryParam("access_key", apiKey);
+                        }
+                        return uriBuilder.build(LIST_BASE_CURRENCY);
+                    })
+                    .exchangeToMono(this::handleResponse)
+                    .block();
+        } catch (InvalidCurrencyException | ExternalApiException e) {
+            throw e;
+        } catch (Exception e) {
+            // NB : jamais de message d'exception brut dans les logs (peut contenir la clé API).
+            log.error("Échec de la récupération de la liste des devises : {}", e.getClass().getSimpleName());
+            throw new ExternalApiException("Exchange rate provider is currently unavailable.", e);
+        }
+
+        if (response == null || response.getRates() == null || response.getRates().isEmpty()) {
+            throw new ExternalApiException("Invalid provider response (no rates received).");
+        }
+        return new TreeSet<>(response.getRates().keySet());
     }
 
     /**

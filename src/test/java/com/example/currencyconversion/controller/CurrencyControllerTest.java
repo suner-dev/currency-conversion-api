@@ -1,6 +1,7 @@
 package com.example.currencyconversion.controller;
 
 import com.example.currencyconversion.dto.ConversionResponse;
+import com.example.currencyconversion.dto.CurrenciesResponse;
 import com.example.currencyconversion.dto.RateResponse;
 import com.example.currencyconversion.exception.ExternalApiException;
 import com.example.currencyconversion.exception.InvalidCurrencyException;
@@ -159,5 +160,30 @@ class CurrencyControllerTest {
         mockMvc.perform(get("/api/currency/rate").param("from", "USD").param("to", "EUR"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.exchangeRate").value(0.8603));
+    }
+
+    // ---- GET /currencies -> 200 + liste triée ----
+    @Test
+    void shouldReturn200OnCurrenciesEndpoint() throws Exception {
+        when(conversionService.listSupportedCurrencies()).thenReturn(CurrenciesResponse.of(
+                java.util.List.of("CNY", "EUR", "USD", "XAF", "XOF")));
+
+        mockMvc.perform(get("/api/currency/currencies"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(5))
+                .andExpect(jsonPath("$.currencies.length()").value(5))
+                .andExpect(jsonPath("$.currencies[3]").value("XAF"))
+                .andExpect(jsonPath("$.timestamp").exists());
+    }
+
+    // ---- GET /currencies avec fournisseur indisponible -> 502 ----
+    @Test
+    void shouldReturn502OnCurrenciesWhenProviderDown() throws Exception {
+        when(conversionService.listSupportedCurrencies())
+                .thenThrow(new ExternalApiException("Exchange rate provider is currently unavailable."));
+
+        mockMvc.perform(get("/api/currency/currencies"))
+                .andExpect(status().isBadGateway())
+                .andExpect(jsonPath("$.error").value("BAD_GATEWAY"));
     }
 }

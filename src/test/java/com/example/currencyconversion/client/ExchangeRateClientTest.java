@@ -15,6 +15,8 @@ import reactor.netty.http.client.HttpClient;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -155,6 +157,40 @@ class ExchangeRateClientTest {
         ExternalApiException ex = assertThrows(ExternalApiException.class,
                 () -> client.getExchangeRate("USD", "EUR"));
         assertTrue(ex.getMessage().contains("500"));
+    }
+
+    // ---- Liste des devises supportées : extraction des codes des taux ----
+    @Test
+    void shouldParseSupportedCurrencyCodes() throws InterruptedException {
+        server.enqueue(new MockResponse()
+                .setHeader("Content-Type", "application/json")
+                .setBody("{\"result\":\"success\",\"base_code\":\"USD\","
+                        + "\"rates\":{\"EUR\":0.86,\"USD\":1.0,\"XAF\":564.29,\"XOF\":564.29,\"CNY\":6.72}}"));
+
+        SortedSet<String> codes = client.getSupportedCurrencyCodes();
+
+        assertEquals(new TreeSet<>(java.util.List.of("CNY", "EUR", "USD", "XAF", "XOF")), codes);
+
+        // La liste est construite avec USD comme devise de base
+        assertEquals("/v6/latest/USD?access_key=test-api-key", server.takeRequest().getPath());
+    }
+
+    // ---- Liste des devises : erreur du fournisseur -> ExternalApiException ----
+    @Test
+    void shouldFailListingOnProviderError() {
+        server.enqueue(new MockResponse().setResponseCode(500));
+
+        assertThrows(ExternalApiException.class, () -> client.getSupportedCurrencyCodes());
+    }
+
+    // ---- Liste des devises : réponse sans taux -> ExternalApiException ----
+    @Test
+    void shouldFailListingWhenRatesMissing() {
+        server.enqueue(new MockResponse()
+                .setHeader("Content-Type", "application/json")
+                .setBody("{\"result\":\"success\",\"base_code\":\"USD\"}"));
+
+        assertThrows(ExternalApiException.class, () -> client.getSupportedCurrencyCodes());
     }
 
     // ---- Timeout : le serveur n'envoie rien -> ExternalApiException ----

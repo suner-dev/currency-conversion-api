@@ -3,6 +3,7 @@ package com.example.currencyconversion.service;
 import com.example.currencyconversion.client.ExchangeRateClient;
 import com.example.currencyconversion.dto.ConversionRequest;
 import com.example.currencyconversion.dto.ConversionResponse;
+import com.example.currencyconversion.dto.CurrenciesResponse;
 import com.example.currencyconversion.dto.RateResponse;
 import com.example.currencyconversion.exception.ExternalApiException;
 import com.example.currencyconversion.exception.InvalidAmountException;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -171,6 +173,27 @@ class CurrencyConversionServiceTest {
 
         assertEquals("GBP", response.getTo());
         assertEquals(0, new BigDecimal("210.88").compareTo(response.getConvertedAmount()));
+    }
+
+    // ---- Liste des devises disponibles ----
+    @Test
+    void shouldListSupportedCurrenciesSorted() {
+        when(client.getSupportedCurrencyCodes()).thenReturn(
+                new TreeSet<>(java.util.List.of("USD", "XAF", "EUR", "CNY")));
+
+        CurrenciesResponse response = service.listSupportedCurrencies();
+
+        assertEquals(4, response.getCount());
+        assertEquals(java.util.List.of("CNY", "EUR", "USD", "XAF"), response.getCurrencies());
+        verify(client).getSupportedCurrencyCodes();
+    }
+
+    @Test
+    void shouldPropagateFailureOnListing() {
+        when(client.getSupportedCurrencyCodes())
+                .thenThrow(new ExternalApiException("Exchange rate provider is currently unavailable."));
+
+        assertThrows(ExternalApiException.class, () -> service.listSupportedCurrencies());
     }
 
     private ConversionRequest req(String from, String to, String amount) {

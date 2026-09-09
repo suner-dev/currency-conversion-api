@@ -88,7 +88,21 @@ Aucune liste n'est codée en dur : **toutes les devises du fournisseur sont acce
 | `CHF` | Franc suisse |
 | `USD`, `EUR`, … | Principales devises internationales |
 
-**Toutes les devises du fournisseur sont convertibles entre elles** (XAF ↔ EUR, XAF ↔ USD, XAF ↔ CNY, XAF ↔ XOF, GBP ↔ XOF, …). Un script de vérification de couverture est fourni :
+**Toutes les devises du fournisseur sont convertibles entre elles** (XAF ↔ EUR, XAF ↔ USD, XAF ↔ CNY, XAF ↔ XOF, GBP ↔ XOF, …). Pour découvrir les devises disponibles, l'API expose une liste dynamique :
+
+```bash
+curl http://localhost:8080/api/currency/currencies
+```
+
+```json
+{
+  "count": 166,
+  "currencies": ["AED", "AFN", "ALL", "AMD", "ANG", "...", "XAF", "XOF", "XPF", "ZAR", "ZMW"],
+  "timestamp": "2026-09-09T12:00:00Z"
+}
+```
+
+Un script de vérification de couverture est également fourni :
 
 ```bash
 # Matrice des monnaies clés (XAF, XOF, CNY, EUR, USD, GBP, JPY, CHF)
@@ -182,6 +196,7 @@ Réponse (200) :
 Endpoint secondaire :
 
 ```
+GET /api/currency/currencies        # liste des devises disponibles (dynamique)
 GET /api/currency/rate?from=USD&to=EUR
 ```
 
@@ -211,11 +226,11 @@ Exemple d'erreur (aucun détail technique exposé) :
 ./mvnw test
 ```
 
-43 tests automatisés, **aucune dépendance Internet** :
-- `CurrencyConversionServiceTest` : logique de conversion (16 cas, dont XAF, XOF, CNY, GBP, JPY, CHF)
-- `ExchangeRateClientTest` : HTTP 200/401/404/429/500, JSON malformé, timeout, connexion refusée via MockWebServer (11 cas)
-- `CurrencyControllerTest` : codes HTTP 200/400/502/500 (10 cas)
-- `CurrencyConversionIntegrationTest` : bout en bout avec client mocké + OpenAPI (6 cas, dont USD→XAF, XOF→CNY, CHF→XOF)
+51 tests automatisés, **aucune dépendance Internet** :
+- `CurrencyConversionServiceTest` : logique de conversion + liste des devises (18 cas)
+- `ExchangeRateClientTest` : HTTP 200/401/404/429/500, JSON malformé, timeout, connexion refusée, liste des devises via MockWebServer (14 cas)
+- `CurrencyControllerTest` : codes HTTP 200/400/502/500 (12 cas)
+- `CurrencyConversionIntegrationTest` : bout en bout avec client mocké + OpenAPI (7 cas)
 
 ### Tester depuis Swagger
 

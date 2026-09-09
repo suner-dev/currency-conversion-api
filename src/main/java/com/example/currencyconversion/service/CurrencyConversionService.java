@@ -3,6 +3,7 @@ package com.example.currencyconversion.service;
 import com.example.currencyconversion.client.ExchangeRateClient;
 import com.example.currencyconversion.dto.ConversionRequest;
 import com.example.currencyconversion.dto.ConversionResponse;
+import com.example.currencyconversion.dto.CurrenciesResponse;
 import com.example.currencyconversion.dto.RateResponse;
 import com.example.currencyconversion.exception.InvalidAmountException;
 import com.example.currencyconversion.exception.InvalidCurrencyException;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
+import java.util.SortedSet;
 
 @Service
 public class CurrencyConversionService {
@@ -46,6 +49,17 @@ public class CurrencyConversionService {
         BigDecimal displayRate = exchangeRate.setScale(RATE_SCALE, ROUNDING);
 
         return ConversionResponse.of(from, to, amount, displayRate, convertedAmount);
+    }
+
+    /**
+     * Liste les devises supportées par le fournisseur, triées alphabétiquement.
+     * Source de vérité : le fournisseur externe (aucune liste codée en dur).
+     */
+    public CurrenciesResponse listSupportedCurrencies() {
+        log.info("Récupération de la liste des devises supportées auprès du fournisseur");
+        SortedSet<String> codes = exchangeRateClient.getSupportedCurrencyCodes();
+        log.info("{} devises disponibles", codes.size());
+        return CurrenciesResponse.of(List.copyOf(codes));
     }
 
     /**

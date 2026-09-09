@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 
 import java.math.BigDecimal;
+import java.util.TreeSet;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -101,11 +102,25 @@ class CurrencyConversionIntegrationTest {
     }
 
     @Test
+    void shouldListCurrenciesEndToEnd() throws Exception {
+        when(exchangeRateClient.getSupportedCurrencyCodes()).thenReturn(
+                new TreeSet<>(java.util.List.of("USD", "XAF", "EUR", "CNY", "XOF", "GBP")));
+
+        mockMvc.perform(get("/api/currency/currencies"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(6))
+                .andExpect(jsonPath("$.currencies[0]").value("CNY"))
+                .andExpect(jsonPath("$.currencies[4]").value("XAF"))
+                .andExpect(jsonPath("$.currencies[5]").value("XOF"));
+    }
+
+    @Test
     void shouldExposeOpenApiDocs() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.openapi").exists())
                 .andExpect(jsonPath("$.paths['/api/currency/convert']").exists())
-                .andExpect(jsonPath("$.paths['/api/currency/rate']").exists());
+                .andExpect(jsonPath("$.paths['/api/currency/rate']").exists())
+                .andExpect(jsonPath("$.paths['/api/currency/currencies']").exists());
     }
 }

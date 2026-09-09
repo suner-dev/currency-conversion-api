@@ -2,6 +2,7 @@ package com.example.currencyconversion.controller;
 
 import com.example.currencyconversion.dto.ConversionRequest;
 import com.example.currencyconversion.dto.ConversionResponse;
+import com.example.currencyconversion.dto.CurrenciesResponse;
 import com.example.currencyconversion.service.CurrencyConversionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -77,6 +78,25 @@ public class CurrencyController {
     @PostMapping("/convert")
     public ResponseEntity<ConversionResponse> convert(@Valid @RequestBody ConversionRequest request) {
         return ResponseEntity.ok(conversionService.convert(request));
+    }
+
+    @Operation(
+            summary = "Lister les devises disponibles",
+            description = "Retourne la liste des devises supportées par le fournisseur de taux, triée alphabétiquement. " +
+                          "Utilisez ces codes dans /convert et /rate. La liste provient dynamiquement du fournisseur."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Liste récupérée",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CurrenciesResponse.class),
+                            examples = @ExampleObject(name = "Extrait de la liste",
+                                    value = "{ \"count\": 166, \"currencies\": [\"AED\", \"AFN\", \"ALL\", \"CNY\", \"EUR\", \"GBP\", \"JPY\", \"USD\", \"XAF\", \"XOF\"], " +
+                                            "\"timestamp\": \"2026-09-09T12:00:00Z\" }"))),
+            @ApiResponse(responseCode = "502", description = "Fournisseur de taux externe indisponible")
+    })
+    @GetMapping("/currencies")
+    public ResponseEntity<CurrenciesResponse> listCurrencies() {
+        return ResponseEntity.ok(conversionService.listSupportedCurrencies());
     }
 
     @Operation(
