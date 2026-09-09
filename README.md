@@ -63,9 +63,52 @@ Variables supportées (valeurs par défaut dans `src/main/resources/application.
 
 ## Lancement
 
+### Option 1 — Ligne de commande (Linux / macOS / Git Bash Windows)
+
 ```bash
 ./mvnw spring-boot:run
 ```
+
+> Sur Windows natif (cmd / PowerShell), utilisez le wrapper Windows : `mvnw.cmd spring-boot:run`
+
+### Option 2 — Construire puis exécuter le JAR
+
+```bash
+./mvnw clean package -DskipTests
+java -jar target/currency-conversion-api-1.0.0.jar
+```
+
+### Option 3 — Depuis un IDE (IntelliJ IDEA, Eclipse, VS Code)
+
+Ouvrez le projet, attendez l'indexation Maven, puis lancez la classe
+`com.example.currencyconversion.CurrencyConversionApplication`.
+
+### Vérifier que l'application a démarré
+
+Le log affiche :
+
+```
+Started CurrencyConversionApplication in X.XXX seconds
+```
+
+Test immédiat que l'API répond :
+
+```bash
+curl http://localhost:8080/api/currency/currencies
+```
+
+### Changer le port (si 8080 est déjà occupé)
+
+```bash
+SERVER_PORT=8081 ./mvnw spring-boot:run        # Linux / macOS
+# Windows (PowerShell) : $env:SERVER_PORT="8081"; ./mvnw spring-boot:run
+```
+
+L'URL de Swagger devient alors http://localhost:8081/swagger-ui/index.html
+
+### Arrêter l'application
+
+`Ctrl + C` dans le terminal qui l'a lancée.
 
 ## Swagger
 
