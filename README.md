@@ -1,5 +1,25 @@
 # API de Conversion de Devises
 
+## 🚀 Test rapide (pour un examinateur)
+
+Aucune configuration n'est nécessaire : le fournisseur `open.er-api.com` fonctionne **sans clé API**. En 3 commandes :
+
+```bash
+git clone https://github.com/suner-dev/currency-conversion-api.git
+cd currency-conversion-api
+./mvnw spring-boot:run          # JDK 17+ requis
+```
+
+Puis ouvrir **http://localhost:8080/swagger-ui/index.html** et cliquer sur un exemple → *Try it out* → *Execute*.
+
+Test immédiat en ligne de commande :
+
+```bash
+curl -X POST http://localhost:8080/api/currency/convert \
+  -H "Content-Type: application/json" \
+  -d '{"from":"USD","to":"XAF","amount":100}'
+```
+
 ## Description
 
 API REST professionnelle de conversion de devises. Les taux de change sont **récupérés dynamiquement** auprès d'un fournisseur externe (ExchangeRate-API — `open.er-api.com`) via **Spring WebClient**. **Aucune base de données, aucun stockage local des taux** : le fournisseur externe est la seule source de vérité.
